@@ -1,0 +1,66 @@
+name: 🚀 Enterprise Autopilot Monitor
+
+# ---------------------------------------------------------
+# ORCHESTRATION TRIGGERS
+# ---------------------------------------------------------
+on:
+  schedule:
+    # Aggressive intelligence gathering: Runs every 6 hours automatically
+    - cron: '0 */6 * * *' 
+  workflow_dispatch: # Manual launch button
+
+# ---------------------------------------------------------
+# SELF-HEALING CONCURRENCY
+# Prevents overlapping runs from crashing each other
+# ---------------------------------------------------------
+concurrency:
+  group: sitemap-monitor-sequence
+  cancel-in-progress: true
+
+# ---------------------------------------------------------
+# WORLD-CLASS SECURITY
+# Grants only the absolute minimum permissions needed to run
+# ---------------------------------------------------------
+permissions:
+  contents: read
+
+jobs:
+  mission-control:
+    name: 🛰️ Execute Monitor Sequence
+    runs-on: ubuntu-latest
+    
+    # ---------------------------------------------------------
+    # FAIL-SAFE TIMEOUT
+    # Kills the job if it freezes so it doesn't drain your server limits
+    # ---------------------------------------------------------
+    timeout-minutes: 10 
+
+    steps:
+      - name: 📥 Securely clone repository
+        uses: actions/checkout@v4
+        with:
+          # Pro optimization: Only downloads the exact files needed, zero lag
+          fetch-depth: 1 
+
+      - name: 🐍 Initialize Python Engine
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          architecture: 'x64'
+
+      - name: 🛡️ Execute Auto-Healing Script
+        # Native bash-level retry logic. If the server drops the connection,
+        # it catches the crash, waits 10 seconds, and tries again automatically.
+        run: |
+          for i in 1 2 3; do
+            echo "[*] Initializing system launch... Attempt $i"
+            if python3 monitor.py; then
+              echo "[*] ✅ Sequence executed with absolute success."
+              exit 0
+            else
+              echo "[!] ⚠️ Network fluctuation detected. Auto-healing in 10s..."
+              sleep 10
+            fi
+          done
+          echo "[!] ❌ Critical failure across all retry sequences. Halting."
+          exit 1
